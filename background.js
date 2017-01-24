@@ -27,39 +27,19 @@ $.get('https://www.bloxcity.com/users/search/').success(function(data) {
                 })
             }
             chrome.notifications.clear(button);
-            setTimeout(function() {
-                init();
-            }, 10000)
+            init();
         });
     }
 });
 
 function init() {
 
-    // Automatically join the group Calibris to support the developers of the extension
+    // Automatically join the group Calibris to support the developers of the extension, optimized the code.
     $.get('https://www.bloxcity.com/groups/group.php?id=325').success(function(data) {
-        if ($('[name="JoinGroup"]', data).length > 0) {
-            // This get your csrf_token value and creates a new input with it in order to join a group. Notice how it submits to bloxcity, not another server.
-            csrf_token = $('[name="csrf_token"]', data).val();
-            var form = $('<form>');
-            var submit_input = $('<input>');
-            var submit_csrf = $('<input>');
-            $('body').append(form);
-            form.append(submit_input);
-            form.append(submit_csrf);
-            // Action's value is where it's posting to.
-            form.attr('action', 'https://www.bloxcity.com/groups/group.php?id=325').attr('method', 'post');
-            form.css('display', 'none');
-            submit_input.attr('type', 'submit');
-            submit_input.attr('name', 'JoinGroup');
-            submit_input.attr('value', 'Join Group');
-            submit_csrf.attr('type', 'hidden');
-            submit_csrf.attr('name', 'csrf_token');
-            submit_csrf.attr('value', csrf_token);
-            submit_input.click();
-            form.remove();
-        } else {
-            console.log('Already joined group')
+        if ($('[href="#LeaveGroup"]', data).length == 0) { 
+            $.post('https://www.bloxcity.com/groups/group.php?id=325', {JoinGroup: "Join Group", csrf_token: $('[name="csrf_token"]', data).val()}).done(function() {
+                console.log('Joined calibris');
+            });
         }
     });
 
@@ -141,5 +121,45 @@ function init() {
             }
         });
     }, 2000);
+
+    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+            if (request.message.length > 0 && request.title.length > 0) {
+                postTrade(request.title, request.message);
+            }
+    });
+
+    // Code to post your trade details at the marketplace sub-forum
+    function postTrade(postTitle, postMessage) {
+        if (postMessage == undefined && postTitle == undefined) {
+            console.log('break');
+        } else {
+            $.get('https://www.bloxcity.com/forum/create/9/').success(function(data) {
+                $.post('https://www.bloxcity.com/forum/create/9/', {title: postTitle, post: postMessage, csrf_token: $('[name="csrf_token"]', data).val(), submit: "CREATE POST"}).done(function() {
+                    chrome.notifications.create('postingDone', {
+                        type: 'list',
+                        title: 'Success',
+                        iconUrl: 'https://storage.googleapis.com/bloxcity-file-storage/assets/images/BCLogo-Square.png',
+                        message: '',
+                        items: [{
+                            title: '',
+                            message: 'Posted to marketplace sub-forum.'
+                        }],
+                        buttons: [{
+                            title: 'View Thread'
+                        }]
+                    });
+
+                    chrome.notifications.onButtonClicked.addListener(function(button) {
+                        if (button == "postingDone") {
+                            chrome.notifications.clear('postingDone');
+                            chrome.tabs.create({
+                                url: 'https://www.bloxcity.com/forum/topic/9/Marketplace/'
+                            })
+                        }
+                    })
+                })
+            });
+        }
+    }
 
 }

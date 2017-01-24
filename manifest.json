@@ -2,12 +2,12 @@
 	"name": "BLOXPlus",
 	"short_name": "BP",
 	"description": "Brought to you by Peridax, and the Calibris development group.",
-	"version": "0.1.1",
+	"version": "0.2",
 	"manifest_version": 2,
 	"incognito": "split",
 	"web_accessible_resources": [ "alert.ogg" ],
 	
-	"permissions": ["notifications", "storage", "unlimitedStorage", "tabs", "https://www.bloxcity.com/*", "https://storage.googleapis.com/*"],
+	"permissions": ["notifications", "storage", "unlimitedStorage", "https://www.bloxcity.com/*", "https://storage.googleapis.com/*"],
 	"icons": {
 		"128": "assets/images/128.png",
 		"48": "assets/images/48.png",
@@ -18,6 +18,11 @@
 	},
 	"background": {
 		"scripts": ["assets/js/jquery.js", "assets/js/data.js", "background.js"]
-	}
+	},
+	"content_scripts": [{
+		"matches": ["https://www.bloxcity.com/*"],
+		"run_at": "document_end",
+		"js": ["assets/js/jquery.js", "assets/js/content.js"]
+	}]
 
 }

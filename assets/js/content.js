@@ -4,7 +4,6 @@ if (window.location.href.indexOf("https://www.bloxcity.com/account/ViewTrade.php
 	var elm = $('h5:contains("trade with ")').text().split("trade with ");
 	elm[0] = "";
 	var trader = elm.join("");
-trader
    	$('.bc-content').prepend('<input type="submit" id="postMarket" value="Post to marketplace" class="groups-blue-button" style="padding:0;padding:4px 8px;float: right">');
 	$('#postMarket').click(function() {
    		postTrade();

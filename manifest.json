@@ -2,7 +2,7 @@
 	"name": "BLOXPlus",
 	"short_name": "BP",
 	"description": "Brought to you by Peridax, and the Calibris development group.",
-	"version": "0.2.0.1",
+	"version": "0.2.0.2",
 	"manifest_version": 2,
 	"incognito": "split",
 	"web_accessible_resources": [ "alert.ogg" ],

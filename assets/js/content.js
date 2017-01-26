@@ -1,6 +1,6 @@
 if (window.location.href.indexOf("https://www.bloxcity.com/account/ViewTrade.php?id") > -1) {
-	var give = $('legend:contains("Give")').parent().parent().find('[style="font-size:12px;"]');;
-	var receive = $('legend:contains("Receive")').parent().parent().find('[style="font-size:12px;"]');;
+	var give = $('legend:contains("Give")').parent().parent().find('[style="font-size:12px;"]');
+	var receive = $('legend:contains("Receive")').parent().parent().find('[style="font-size:12px;"]');
 	var elm = $('h5:contains("trade with ")').text().split("trade with ");
 	elm[0] = "";
 	var trader = elm.join("");
@@ -23,14 +23,14 @@ function postTrade() {
 		} else {
 			postGiving += " " + giving[i] + ",";
 		}
+	}
 
-		for (var x = 0; x < receive.length; x++) {
-			receiving.push(receive.eq(x).text())
-			if (x == (receive.length - 1)) {
-				postReceiving += " " + receiving[x];
-			} else {
-				postReceiving += " " + receiving[x] + ",";
-			}
+	for (var x = 0; x < receive.length; x++) {
+		receiving.push(receive.eq(x).text())
+		if (x == (receive.length - 1)) {
+			postReceiving += " " + receiving[x];
+		} else {
+			postReceiving += " " + receiving[x] + ",";
 		}
 	}
 

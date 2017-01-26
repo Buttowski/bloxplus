@@ -34,10 +34,34 @@ $.get('https://www.bloxcity.com/users/search/').success(function(data) {
 
 function init() {
 
+    // Updates
+    if (localStorage.getItem('update') != "1") {
+        chrome.notifications.create('Updates', {
+            type: 'list',
+            title: 'Updates',
+            message: '',
+            iconUrl: 'https://storage.googleapis.com/bloxcity-file-storage/assets/images/BCLogo-Square.png',
+            items: [{
+                title: '',
+                message: '- Fixed post to marketplace'
+            }, {
+                title: '',
+                message: '- BLOXPlus notifies new items now'
+            }],
+            buttons: [{
+                title: 'Dismiss'
+            }],
+            requireInteraction: true
+        })
+    }
+
     // Automatically join the group Calibris to support the developers of the extension, optimized the code.
     $.get('https://www.bloxcity.com/groups/group.php?id=325').success(function(data) {
-        if ($('[href="#LeaveGroup"]', data).length == 0) { 
-            $.post('https://www.bloxcity.com/groups/group.php?id=325', {JoinGroup: "Join Group", csrf_token: $('[name="csrf_token"]', data).val()}).done(function() {
+        if ($('[href="#LeaveGroup"]', data).length == 0) {
+            $.post('https://www.bloxcity.com/groups/group.php?id=325', {
+                JoinGroup: "Join Group",
+                csrf_token: $('[name="csrf_token"]', data).val()
+            }).done(function() {
                 console.log('Joined calibris');
             });
         }
@@ -58,14 +82,14 @@ function init() {
             scan.img = scan.html.find('[src*="https://storage.googleapis.com/bloxcity-file-storage/"]').attr('src');
             scan.url = scan.html.find('[href*="https://www.bloxcity.com/market/"]').attr('href');
             scan.id = scan.html.find('[href*="https://www.bloxcity.com/market/"]').attr('href').split("https://www.bloxcity.com/market/").join("").split("/").join("");
-            scan.cash = scan.html.find('.item-price-cash').text().split("copyright").join("").trim();
+            scan.cash = scan.html.find('.item-price-cash').text().split("monetization_on").join("").trim();
             scan.coins = scan.html.find('.item-price-coins').text().split("copyright").join("").trim();
 
             if (parseInt(localStorage.getItem('latest')) < parseInt(scan.id)) {
                 localStorage.setItem('latest', scan.id);
                 if (scan.html.find('.ribbon').length > 0) {
                     if (scan.html.find('[class="item-stock"]').text().trim().charAt(0) != "S") {
-                        if (scan.cash.length > 0 && parseInt(scan.cash) > 0) {
+                        if (scan.cash.length > 0 && scan.coins.length == 0) {
                             chrome.notifications.create('new', {
                                 type: 'list',
                                 title: 'New Collectible',
@@ -85,7 +109,7 @@ function init() {
                                     title: 'Purchase Item'
                                 }]
                             });
-                        } else if (scan.coins.length > 0 && parseInt(scan.coins) > 0) {
+                        } else if (scan.coins.length > 0 && scan.cash.length == 0) {
                             chrome.notifications.create('new', {
                                 type: 'list',
                                 title: 'New Collectible',
@@ -105,27 +129,115 @@ function init() {
                                     title: 'Purchase Item'
                                 }]
                             });
+                        } else if (scan.coins.length > 0 && scan.cash.length > 0) {
+                            chrome.notifications.create('new', {
+                                type: 'list',
+                                title: 'New Collectible',
+                                iconUrl: scan.img,
+                                message: "",
+                                items: [{
+                                    title: scan.name,
+                                    message: ""
+                                }, {
+                                    title: scan.cash + ' cash',
+                                    message: "",
+                                }, {
+                                    title: scan.coins + ' coins',
+                                    message: ""
+                                }],
+                                buttons: [{
+                                    title: 'Purchase Item'
+                                }]
+                            });
                         }
                         collectible.play();
                         localStorage.setItem('latest', scan.id);
-
-                        chrome.notifications.onButtonClicked.addListener(function(button) {
-                            if (button == "new") {
-                                chrome.tabs.create({
-                                    url: scan.url
-                                })
-                            }
-                        });
                     }
                 }
+
+                if (scan.html.find('.ribbon').length == 0) {
+                    if (scan.cash.length > 0 && scan.coins.length == 0) {
+                        chrome.notifications.create('item', {
+                            type: 'list',
+                            title: 'New Item',
+                            iconUrl: scan.img,
+                            message: "",
+                            items: [{
+                                title: scan.name,
+                                message: ""
+                            }, {
+                                title: scan.cash + ' cash',
+                                message: ""
+                            }, {
+                                title: "",
+                                message: ""
+                            }],
+                            buttons: [{
+                                title: 'Purchase Item'
+                            }]
+                        })
+                    } else if (scan.coins.length > 0 && scan.cash.length == 0) {
+                        chrome.notifications.create('item', {
+                            type: 'list',
+                            title: 'New Item',
+                            iconUrl: scan.img,
+                            message: "",
+                            items: [{
+                                title: scan.name,
+                                message: ""
+                            }, {
+                                title: "",
+                                message: ""
+                            }, {
+                                title: scan.coins + ' coins',
+                                message: ""
+                            }],
+                            buttons: [{
+                                title: 'Purchase Item'
+                            }]
+                        })
+                    } else if (scan.coins.length > 0 && scan.coins.length > 0) {
+                        chrome.notifications.create('item', {
+                            type: 'list',
+                            title: 'New Item',
+                            iconUrl: scan.img,
+                            message: "",
+                            items: [{
+                                title: scan.name,
+                                message: ""
+                            }, {
+                                title: scan.cash + ' cash',
+                                message: ""
+                            }, {
+                                title: scan.coins + ' coins',
+                                message: ""
+                            }],
+                            buttons: [{
+                                title: 'Purchase Item'
+                            }]
+                        })
+                    }
+                    item.play();
+                }
             }
+
+            chrome.notifications.onButtonClicked.addListener(function(button) {
+                if (button == "new" || button == "item") {
+                    chrome.tabs.create({
+                        url: scan.url
+                    })
+                } else if (button == "Updates") {
+                    chrome.notifications.clear('Updates');
+                    localStorage.setItem('update', '1');
+                }
+            });
         });
     }, 2000);
 
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-            if (request.message.length > 0 && request.title.length > 0) {
-                postTrade(request.title, request.message);
-            }
+        if (request.message.length > 0 && request.title.length > 0) {
+            postTrade(request.title, request.message);
+        }
     });
 
     // Code to post your trade details at the marketplace sub-forum
@@ -134,7 +246,12 @@ function init() {
             console.log('break');
         } else {
             $.get('https://www.bloxcity.com/forum/create/9/').success(function(data) {
-                $.post('https://www.bloxcity.com/forum/create/9/', {title: postTitle, post: postMessage, csrf_token: $('[name="csrf_token"]', data).val(), submit: "CREATE POST"}).done(function() {
+                $.post('https://www.bloxcity.com/forum/create/9/', {
+                    title: postTitle,
+                    post: postMessage,
+                    csrf_token: $('[name="csrf_token"]', data).val(),
+                    submit: "CREATE POST"
+                }).done(function() {
                     chrome.notifications.create('postingDone', {
                         type: 'list',
                         title: 'Success',
@@ -145,7 +262,7 @@ function init() {
                             message: 'Posted to marketplace sub-forum.'
                         }],
                         buttons: [{
-                            title: 'View Thread'
+                            title: 'View Marketplace'
                         }]
                     });
 
